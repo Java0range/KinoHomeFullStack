@@ -1,0 +1,35 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb_kh
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: KinoHome1337
+    ports:
+      - "27017:27017"
+
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    container_name: rabbitmq_kh
+    environment:
+      - RABBITMQ_DEFAULT_USER=root
+      - RABBITMQ_DEFAULT_PASS=KinoHome1337
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent_kh
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - WEBUI_PORT=8086
+      - TORRENTING_PORT=6881
+    volumes:
+      - ./qbittorrent:/config
+      - /E/Movies/downloads:/downloads
+    ports:
+      - "8086:8086"
+      - "6881:6881"
