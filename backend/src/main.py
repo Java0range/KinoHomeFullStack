@@ -26,7 +26,7 @@ async def lifespan(app: FastAPI):
 
 def create_fastapi_app():
     app = FastAPI(lifespan=lifespan)
-    origins = ["https://kinohome.cloudpub.ru", "http://localhost:3000"]
+    origins = ["https://kinohome.cloudpub.ru", "http://localhost:3000", "http://127.0.0.1:3000"]
     app.add_middleware(
         CORSMiddleware,
         allow_origins=origins,
