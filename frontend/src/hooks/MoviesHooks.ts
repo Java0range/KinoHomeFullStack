@@ -26,3 +26,11 @@ export const useMovies = (type: string, genres: string[] | [], count_type: strin
         select: (({data}) => data)
     });
 };
+
+export const useMovie = (movie_id: string) => {
+    return useQuery({
+        queryKey: ["movie", movie_id],
+        queryFn: () => MoviesService.getMovieById(movie_id),
+        select: (({data}) => data)
+    });
+}
