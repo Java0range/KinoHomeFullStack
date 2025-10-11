@@ -118,60 +118,65 @@ async def convert_to_hls(
 @broker.subscriber("hls_convertor")
 async def handle_conversion(msg: dict, logger: Logger):
     """Обработчик сообщений из RabbitMQ"""
-    media_id = msg["id"]
-    rel_path = msg["path"].lstrip('/')
+    if msg["path"] == "delete":
+        delete_path = MEDIA_DIR / str(msg["id"])
+        if delete_path.is_dir():
+            shutil.rmtree(delete_path)
+    else:
+        media_id = msg["id"]
+        rel_path = msg["path"].lstrip('/')
 
-    input_path = DOWNLOADS_DIR / rel_path
-    output_base = MEDIA_DIR / str(media_id)
+        input_path = DOWNLOADS_DIR / rel_path
+        output_base = MEDIA_DIR / str(media_id)
 
-    try:
-        if not input_path.exists():
-            logger.error(f"Path not found: {input_path}")
-            return
+        try:
+            if not input_path.exists():
+                logger.error(f"Path not found: {input_path}")
+                return
 
-        # Обработка фильма (единичный файл)
-        if input_path.is_file():
-            logger.info(f"Processing movie: ID={media_id}")
-            if await convert_to_hls(input_path, output_base, logger):
-                input_path.unlink()
-                logger.info(f"Movie processed and source deleted: {input_path}")
-                await AsyncMovieODM.change_movie_state(movie_id=media_id, series_count=1)
+            # Обработка фильма (единичный файл)
+            if input_path.is_file():
+                logger.info(f"Processing movie: ID={media_id}")
+                if await convert_to_hls(input_path, output_base, logger):
+                    input_path.unlink()
+                    logger.info(f"Movie processed and source deleted: {input_path}")
+                    await AsyncMovieODM.change_movie_state(movie_id=media_id, series_count=1)
 
-        # Обработка сериала (папка с эпизодами)
-        elif input_path.is_dir():
-            logger.info(f"Processing series: ID={media_id}")
-            tasks = []
+            # Обработка сериала (папка с эпизодами)
+            elif input_path.is_dir():
+                logger.info(f"Processing series: ID={media_id}")
+                tasks = []
 
-            for entry in input_path.iterdir():
-                if not entry.is_file():
-                    continue
+                for entry in input_path.iterdir():
+                    if not entry.is_file():
+                        continue
 
-                ep_num = extract_episode_number(entry.name)
-                if ep_num is None:
-                    logger.warning(f"Skipping {entry.name}: no episode number")
-                    continue
+                    ep_num = extract_episode_number(entry.name)
+                    if ep_num is None:
+                        logger.warning(f"Skipping {entry.name}: no episode number")
+                        continue
 
-                ep_dir = output_base / str(ep_num)
-                tasks.append(convert_to_hls(entry, ep_dir, logger))
+                    ep_dir = output_base / str(ep_num)
+                    tasks.append(convert_to_hls(entry, ep_dir, logger))
 
-            # Параллельная обработка эпизодов
-            results = await gather(*tasks)
+                # Параллельная обработка эпизодов
+                results = await gather(*tasks)
 
-            # Удаляем только успешно обработанные файлы
-            for i, entry in enumerate(input_path.iterdir()):
-                if entry.is_file() and results[i] is True:
-                    entry.unlink()
-                    logger.info(f"Deleted processed file: {entry}")
+                # Удаляем только успешно обработанные файлы
+                for i, entry in enumerate(input_path.iterdir()):
+                    if entry.is_file() and results[i] is True:
+                        entry.unlink()
+                        logger.info(f"Deleted processed file: {entry}")
 
-            # Удаляем пустую директорию
-            if not any(input_path.iterdir()):
-                shutil.rmtree(input_path)
-                logger.info(f"Cleaned empty series directory: {input_path}")
+                # Удаляем пустую директорию
+                if not any(input_path.iterdir()):
+                    shutil.rmtree(input_path)
+                    logger.info(f"Cleaned empty series directory: {input_path}")
 
-            await AsyncMovieODM.change_movie_state(movie_id=media_id, series_count=len(results))
+                await AsyncMovieODM.change_movie_state(movie_id=media_id, series_count=len(results))
 
-    except Exception as e:
-        logger.error(f"Processing error: {str(e)}")
+        except Exception as e:
+            logger.error(f"Processing error: {str(e)}")
 
 
 if __name__ == "__main__":

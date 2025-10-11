@@ -9,3 +9,4 @@ class AsyncMovieODM:
         movie = await MovieDocument.find_one(MovieDocument.id == movie_id)
         movie.state = "Ready"
         movie.series_count = series_count
+        await movie.save()
