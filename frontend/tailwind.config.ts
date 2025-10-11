@@ -1,5 +1,9 @@
 import type { Config } from 'tailwindcss'
 
+module.exports = {
+    plugins: [require('@vidstack/react/tailwind.cjs')],
+};
+
 export default {
     content: [
         './app/**/*.{js,ts,jsx,tsx,mdx}',

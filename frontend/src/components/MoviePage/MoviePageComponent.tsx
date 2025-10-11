@@ -23,7 +23,7 @@ export default function MoviePageComponent( { movie_id }: Props ) {
                     <div>
                         <div
                             className="fixed inset-0 m-0 bg-gradient-to-b from-zinc-950 via-zinc-900 to-black flex justify-center overflow-y-auto overflow-x-hidden">
-                            <div className="w-3/5 max-xl:w-4/5 max-lg:w-full px-6 sm:px-10 pt-6 sm:pt-10 pb-16">
+                            <div className="w-3/5 max-xl:w-4/5 max-lg:w-full px-2 pt-6 sm:pt-10 pb-16">
                                 <Header/>
                                 <MoviePrev movie={movieQuery.data}/>
                             </div>

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import {IMovie} from "@/models/MoviesModels";
+import MovieHlsPlayer from "@/components/MoviePage/MovieHlsPlayer";
 
 
 
@@ -46,8 +47,7 @@ const MoviePrev = ( { movie }: Props) => {
             {/* карта-контейнер */}
             <div className="relative rounded-2xl sm:rounded-3xl border border-white/10 bg-zinc-900/40 backdrop-blur-xl p-4 sm:p-6 shadow-[0_20px_60px_rgba(220,38,38,0.20)]">
                 {/* инфо: постер + мета */}
-                <div className="flex items-start gap-8 max-md:flex-col">
-                    {/* постер */}
+                <div className="flex items-center gap-8 max-md:flex-col">
                     <div className="shrink-0">
                         <div className="relative">
                             <Image
@@ -63,8 +63,6 @@ const MoviePrev = ( { movie }: Props) => {
                             <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
                         </div>
                     </div>
-
-                    {/* текстовые детали */}
                     <div className="flex-1 flex flex-col gap-5">
                         <div className="flex items-start justify-between gap-4 max-sm:flex-col">
                             <div className="flex flex-col gap-2">
@@ -84,8 +82,6 @@ const MoviePrev = ( { movie }: Props) => {
                   </span>
                                 </div>
                             </div>
-
-                            {/* рейтинги */}
                             <div className="flex gap-3">
                                 <div className="min-w-16 text-center rounded-2xl bg-red-600/90 text-white px-3 py-2 shadow-[0_0_22px_rgba(220,38,38,0.45)]">
                                     <div className="text-xs uppercase tracking-wider">kp</div>
@@ -106,21 +102,12 @@ const MoviePrev = ( { movie }: Props) => {
                         }
                     </div>
                 </div>
-
-                {/* разделитель */}
                 <div className="mt-6 h-px w-full bg-gradient-to-r from-transparent via-red-600/40 to-transparent" />
-
-                {/* плеер под описанием */}
-                <div
-                    id="player"
-                    className={`mt-6 relative w-full aspect-video rounded-xl sm:rounded-2xl bg-black ring-1 ring-white/10 shadow-[0_10px_40px_rgba(220,38,38,0.18)] overflow-hidden transition-transform duration-700 ${
-                        mounted ? 'translate-y-0' : 'translate-y-1'
-                    }`}
-                    aria-label="Видео-плеер"
-                >
-                    <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/5" />
-                    <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/5 to-transparent" />
-                </div>
+                <MovieHlsPlayer
+                    title={movie.name}
+                    src={`http://localhost:7000/${movie._id}`}
+                    series_count={movie.series_count}
+                />
             </div>
         </section>
     );
