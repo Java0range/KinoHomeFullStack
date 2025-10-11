@@ -40,7 +40,7 @@ async def get_movie_info_for_id(movie_id: str):
                     description=str(movie.get("description")) if movie.get("description") is not None else "",
                     short_description=str(movie.get("shortDescription")) if movie.get("shortDescription") is not None else "",
                     poster=movie["poster"]["url"] if movie["poster"] else "",
-                    backdrop=movie["backdrop"]["url"] if movie["backdrop"] else "",
+                    backdrop=movie["backdrop"]["url"] if "backdrop" in movie.keys() else "",
                     rating=RatingSchema(kp=movie["rating"]["kp"], imdb=movie["rating"]["imdb"]),
                     genres=[genre["name"].capitalize() for genre in movie["genres"]],
                     countries=[country["name"].capitalize() for country in movie["countries"]],
