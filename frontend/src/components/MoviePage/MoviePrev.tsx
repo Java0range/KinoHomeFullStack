@@ -17,6 +17,7 @@ const MoviePrev = ( { movie }: Props) => {
 
     const [mounted, setMounted] = useState(false);
     useEffect(() => {
+        console.log(process.env.NEXT_PUBLIC_HLS_URL);
         const id = requestAnimationFrame(() => setMounted(true));
         return () => cancelAnimationFrame(id);
     }, []);
@@ -105,7 +106,7 @@ const MoviePrev = ( { movie }: Props) => {
                 <div className="mt-6 h-px w-full bg-gradient-to-r from-transparent via-red-600/40 to-transparent" />
                 <MovieHlsPlayer
                     title={movie.name}
-                    src={`http://localhost:7000/${movie._id}`}
+                    src={`${process.env.NEXT_PUBLIC_HLS_URL}/${movie._id}`}
                     series_count={movie.series_count}
                 />
             </div>

@@ -1,57 +1,36 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { TorrentsTable } from './TorrentsTable';
 import { TorrentModal } from './TorrentModal';
+import { ConvertModal } from './ConvertModal';
 import { Button } from '../UI/Button';
-
-// Моковые данные
-const mockTorrents = [
-    {
-        id: 1,
-        name: 'Интерстеллар.2014.BDRip.1080p.mkv',
-        progress: 45,
-        status: 'downloading' as const,
-        speed: '5.2 MB/s',
-        size: '14.3 GB',
-    },
-    {
-        id: 2,
-        name: 'Breaking.Bad.S01-S05.Complete.1080p',
-        progress: 100,
-        status: 'seeding' as const,
-        speed: '1.2 MB/s',
-        size: '85.6 GB',
-    },
-    {
-        id: 3,
-        name: 'The.Dark.Knight.2008.2160p.UHD.BluRay',
-        progress: 78,
-        status: 'paused' as const,
-        speed: '0 B/s',
-        size: '45.2 GB',
-    },
-    {
-        id: 4,
-        name: 'Inception.2010.1080p.BluRay.x264',
-        progress: 100,
-        status: 'completed' as const,
-        speed: '-',
-        size: '12.8 GB',
-    },
-    {
-        id: 5,
-        name: 'Game.of.Thrones.S08E06.1080p',
-        progress: 23,
-        status: 'error' as const,
-        speed: '0 B/s',
-        size: '4.5 GB',
-    },
-];
+import { useGetAllTorrents } from "@/hooks/AdminTorrentsHooks";
+import { useDebounce } from "@/hooks/useDebounce";
+import { TorrentsModel } from "@/models/TorrentsModels";
 
 export const TorrentsSection: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isConvertModalOpen, setIsConvertModalOpen] = useState(false);
+    const [selectedTorrent, setSelectedTorrent] = useState<TorrentsModel | null>(null);
 
-    const handleDelete = (torrentId: number) => {
-        console.log('Delete torrent:', torrentId);
+    const { data: torrents = [], isLoading: isTorrentsLoading, refetch: refetchTorrents } = useGetAllTorrents();
+
+    const [searchQuery, setSearchQuery] = useState('');
+    const debouncedSearch = useDebounce(searchQuery, 300);
+
+    const filteredTorrents = useMemo(() => {
+        if (!debouncedSearch.trim()) {
+            return torrents;
+        }
+
+        const query = debouncedSearch.toLowerCase().trim();
+        return torrents.filter((torrent) =>
+            torrent.file_name.toLowerCase().includes(query)
+        );
+    }, [torrents, debouncedSearch]);
+
+    const handleConvert = (torrent: TorrentsModel) => {
+        setSelectedTorrent(torrent);
+        setIsConvertModalOpen(true);
     };
 
     return (
@@ -83,7 +62,7 @@ export const TorrentsSection: React.FC = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-3 gap-4">
                 <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center">
@@ -97,7 +76,7 @@ export const TorrentsSection: React.FC = () => {
                         </div>
                         <div>
                             <p className="text-xs text-zinc-500">Загружается</p>
-                            <p className="text-xl font-bold text-white">2</p>
+                            <p className="text-xl font-bold text-white">{torrents.filter(t => t.state === 'downloading').length}</p>
                         </div>
                     </div>
                 </div>
@@ -114,30 +93,7 @@ export const TorrentsSection: React.FC = () => {
                         </div>
                         <div>
                             <p className="text-xs text-zinc-500">Раздаётся</p>
-                            <p className="text-xl font-bold text-white">1</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-red-600/20 rounded-lg flex items-center justify-center">
-                            <svg
-                                className="w-5 h-5 text-red-400"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"
-                                />
-                            </svg>
-                        </div>
-                        <div>
-                            <p className="text-xs text-zinc-500">Общая скорость</p>
-                            <p className="text-xl font-bold text-white">6.4 MB/s</p>
+                            <p className="text-xl font-bold text-white">{torrents.filter(t => t.state === 'stalledUP').length}</p>
                         </div>
                     </div>
                 </div>
@@ -154,7 +110,7 @@ export const TorrentsSection: React.FC = () => {
                         </div>
                         <div>
                             <p className="text-xs text-zinc-500">Завершено</p>
-                            <p className="text-xl font-bold text-white">1</p>
+                            <p className="text-xl font-bold text-white">{torrents.filter(t => t.state === 'stoppedUP').length}</p>
                         </div>
                     </div>
                 </div>
@@ -179,27 +135,33 @@ export const TorrentsSection: React.FC = () => {
                     <input
                         type="text"
                         placeholder="Поиск по названию..."
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        value={searchQuery}
                         className="w-full pl-10 pr-4 py-2.5 bg-zinc-900 border border-zinc-800 rounded-lg
-                       text-white placeholder-zinc-500 focus:outline-none focus:border-red-600"
+                                   text-white placeholder-zinc-500 focus:outline-none focus:border-red-600"
                     />
                 </div>
-                <select className="px-4 py-2.5 bg-zinc-900 border border-zinc-800 rounded-lg text-white focus:outline-none focus:border-red-600">
-                    <option>Все статусы</option>
-                    <option>Загружается</option>
-                    <option>Раздаётся</option>
-                    <option>На паузе</option>
-                    <option>Завершён</option>
-                    <option>Ошибка</option>
-                </select>
             </div>
 
             {/* Table */}
-            <TorrentsTable torrents={mockTorrents} onDelete={handleDelete} />
+            <TorrentsTable
+                torrents={filteredTorrents}
+                refetchTorrents={refetchTorrents}
+                onConvert={handleConvert}
+            />
 
-            {/* Modal */}
+            {/* Add Torrent Modal */}
             <TorrentModal
                 isOpen={isModalOpen}
+                refetchTorrents={refetchTorrents}
                 onClose={() => setIsModalOpen(false)}
+            />
+
+            {/* Convert Modal */}
+            <ConvertModal
+                isOpen={isConvertModalOpen}
+                onClose={() => setIsConvertModalOpen(false)}
+                torrent={selectedTorrent}
             />
         </div>
     );

@@ -26,3 +26,22 @@ export interface IMovie {
     genres: string[] | [],
     countries: string[] | []
 }
+
+interface IRating {
+    kp: number,
+    imdb: number
+}
+
+export interface MovieSearchResult {
+    kinopoisk_id: number
+    name: string;
+    year: number;
+    description: string;
+    short_description: string;
+    poster: string;
+    backdrop: string;
+    rating: IRating;
+    genres: string[];
+    countries: string[];
+    movie_type: "Film" | "Serial";
+}

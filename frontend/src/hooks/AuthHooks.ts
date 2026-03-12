@@ -8,3 +8,11 @@ export const useLogin = (login: string, password: string) => {
         select: (({data}) => data)
     });
 };
+
+export const useGetUserInfo = () => {
+    return useQuery({
+        queryKey: ["login"],
+        queryFn: () => AuthService.getUserInfo(),
+        select: (({data}) => data)
+    });
+};

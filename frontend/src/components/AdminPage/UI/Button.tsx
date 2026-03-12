@@ -2,6 +2,7 @@ import React from 'react';
 
 interface ButtonProps {
     children: React.ReactNode;
+    disabled?: boolean;
     variant?: 'primary' | 'danger' | 'ghost';
     size?: 'sm' | 'md' | 'lg';
     onClick?: () => void;
@@ -11,13 +12,14 @@ interface ButtonProps {
 
 export const Button: React.FC<ButtonProps> = ({
                                                   children,
+                                                  disabled = false,
                                                   variant = 'primary',
                                                   size = 'md',
                                                   onClick,
                                                   className = '',
                                                   type = 'button',
                                               }) => {
-    const baseStyles = 'font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2';
+    const baseStyles = 'font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:bg-gray-800 disabled:cursor-not-allowed';
 
     const variantStyles = {
         primary: 'bg-red-600 hover:bg-red-700 text-white',
@@ -33,6 +35,7 @@ export const Button: React.FC<ButtonProps> = ({
 
     return (
         <button
+            disabled={disabled}
             type={type}
             onClick={onClick}
             className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}

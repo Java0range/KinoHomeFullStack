@@ -21,6 +21,11 @@ export async function middleware(request: NextRequest) {
     if (!isAuthPage && !isAdminPage && !isProtected && !isMoviePage) {
         return NextResponse.next();
     }
+    try {
+        const { authorized, role, refreshedCookies } = await getAuthState(cookieHeader);
+    } catch (e) {
+        console.error(e);
+    }
 
     const { authorized, role, refreshedCookies } = await getAuthState(cookieHeader);
 

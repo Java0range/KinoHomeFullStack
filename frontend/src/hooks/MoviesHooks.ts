@@ -27,6 +27,14 @@ export const useMovies = (type: string, genres: string[] | [], count_type: strin
     });
 };
 
+export const useAllMovies = () => {
+    return useQuery({
+        queryKey: ["AdminAllMovies"],
+        queryFn: () => MoviesService.getAllMovies(),
+        select: (({data}) => data)
+    });
+};
+
 export const useMovie = (movie_id: string) => {
     return useQuery({
         queryKey: ["movie", movie_id],

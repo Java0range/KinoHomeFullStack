@@ -1,29 +1,30 @@
 import React from 'react';
-
-interface Torrent {
-    id: number;
-    name: string;
-    progress: number;
-    status: 'downloading' | 'seeding' | 'paused' | 'completed' | 'error';
-    speed: string;
-    size: string;
-}
+import { TorrentsModel } from "@/models/TorrentsModels";
+import { Button } from "@/components/AdminPage/UI/Button";
+import AdminTorrentsService from "@/services/AdminTorrentsService";
 
 interface TorrentsTableProps {
-    torrents: Torrent[];
-    onDelete: (torrentId: number) => void;
+    torrents: TorrentsModel[];
+    refetchTorrents: () => void;
+    onConvert: (torrent: TorrentsModel) => void;
 }
 
-const getStatusInfo = (status: Torrent['status']) => {
+const getStatusInfo = (status: TorrentsModel["state"]) => {
     switch (status) {
         case 'downloading':
             return { label: 'Загрузка', color: 'bg-blue-600/20 text-blue-400' };
-        case 'seeding':
+        case 'stalledUP':
             return { label: 'Раздача', color: 'bg-green-600/20 text-green-400' };
-        case 'paused':
-            return { label: 'Пауза', color: 'bg-yellow-600/20 text-yellow-400' };
-        case 'completed':
+        case 'stoppedDL':
+            return { label: 'Остановлено', color: 'bg-yellow-600/20 text-yellow-400' };
+        case 'queuedDL':
+            return { label: 'В очереди', color: 'bg-yellow-600/20 text-yellow-400' };
+        case 'stoppedUP':
             return { label: 'Завершён', color: 'bg-zinc-700 text-zinc-300' };
+        case 'metaDL':
+            return { label: 'Загрузка Мета-Данных', color: 'bg-purple-600/20 text-purple-400' };
+        case 'stalledDL':
+            return { label: 'Простаивает', color: 'bg-cyan-600/20 text-cyan-400' };
         case 'error':
             return { label: 'Ошибка', color: 'bg-red-600/20 text-red-400' };
         default:
@@ -33,8 +34,24 @@ const getStatusInfo = (status: Torrent['status']) => {
 
 export const TorrentsTable: React.FC<TorrentsTableProps> = ({
                                                                 torrents,
-                                                                onDelete,
+                                                                refetchTorrents,
+                                                                onConvert,
                                                             }) => {
+    const handleDelete = async (hash: string) => {
+        await AdminTorrentsService.deleteTorrent(hash);
+        refetchTorrents();
+    };
+
+    const handlePauseButton = async (state: string, hash: string) => {
+        if (state === 'stoppedDL') {
+            await AdminTorrentsService.resumeTorrent(hash);
+            refetchTorrents();
+        } else {
+            await AdminTorrentsService.pauseTorrent(hash);
+            refetchTorrents();
+        }
+    };
+
     return (
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
             <table className="w-full">
@@ -61,11 +78,11 @@ export const TorrentsTable: React.FC<TorrentsTableProps> = ({
                 </tr>
                 </thead>
                 <tbody>
-                {torrents.map((torrent) => {
-                    const statusInfo = getStatusInfo(torrent.status);
+                {torrents.map((torrent, index) => {
+                    const statusInfo = getStatusInfo(torrent.state);
                     return (
                         <tr
-                            key={torrent.id}
+                            key={torrent.hash || index}
                             className="border-b border-zinc-800 last:border-0 hover:bg-zinc-800/50 transition-colors"
                         >
                             <td className="px-6 py-4">
@@ -81,7 +98,7 @@ export const TorrentsTable: React.FC<TorrentsTableProps> = ({
                                     </div>
                                     <div>
                                         <p className="text-sm font-medium text-white truncate max-w-xs">
-                                            {torrent.name}
+                                            {torrent.file_name ? torrent.file_name : torrent.name}
                                         </p>
                                     </div>
                                 </div>
@@ -91,7 +108,7 @@ export const TorrentsTable: React.FC<TorrentsTableProps> = ({
                                     <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden w-32">
                                         <div
                                             className={`h-full rounded-full transition-all ${
-                                                torrent.status === 'error'
+                                                torrent.state === 'error'
                                                     ? 'bg-red-600'
                                                     : torrent.progress === 100
                                                         ? 'bg-green-600'
@@ -101,16 +118,16 @@ export const TorrentsTable: React.FC<TorrentsTableProps> = ({
                                         />
                                     </div>
                                     <span className="text-sm text-zinc-400 w-12">
-                      {torrent.progress}%
-                    </span>
+                                            {torrent.progress}%
+                                        </span>
                                 </div>
                             </td>
                             <td className="px-6 py-4">
-                  <span
-                      className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}
-                  >
-                    {statusInfo.label}
-                  </span>
+                                    <span
+                                        className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}
+                                    >
+                                        {statusInfo.label}
+                                    </span>
                             </td>
                             <td className="px-6 py-4 text-sm text-zinc-400">
                                 {torrent.speed}
@@ -120,9 +137,17 @@ export const TorrentsTable: React.FC<TorrentsTableProps> = ({
                             </td>
                             <td className="px-6 py-4">
                                 <div className="flex items-center justify-end gap-2">
+                                    {(torrent.state === "stoppedUP" || torrent.state === "stalledUP") && (
+                                        <Button onClick={() => onConvert(torrent)}>
+                                            Конвертировать
+                                        </Button>
+                                    )}
                                     {/* Pause/Resume Button */}
-                                    <button className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
-                                        {torrent.status === 'paused' ? (
+                                    <button
+                                        className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
+                                        onClick={() => handlePauseButton(torrent.state, torrent.hash)}
+                                    >
+                                        {torrent.state === "stoppedDL" ? (
                                             <svg
                                                 className="w-4 h-4"
                                                 fill="currentColor"
@@ -142,7 +167,7 @@ export const TorrentsTable: React.FC<TorrentsTableProps> = ({
                                     </button>
                                     {/* Delete Button */}
                                     <button
-                                        onClick={() => onDelete(torrent.id)}
+                                        onClick={() => handleDelete(torrent.hash)}
                                         className="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-600/10 rounded-lg transition-colors"
                                     >
                                         <svg

@@ -12,6 +12,9 @@ export default class MoviesService {
     static async getMoviesByFilters(type: string, genres: string[] | [], count_type: string): Promise<AxiosResponse<IMovie[]>> {
         return $api.get<IMovie[]>(`/movies?movie_type=${type}&count_type=${count_type}${genres.map((genre) => `&genres=${genre}`).join("")}`);
     };
+    static async getAllMovies(): Promise<AxiosResponse<IMovie[]>> {
+        return $api.get<IMovie[]>("/movies");
+    };
     static async getMovieById(movie_id: string) {
         return $api.get<IMovie>(`/movies/${movie_id}`)
     }

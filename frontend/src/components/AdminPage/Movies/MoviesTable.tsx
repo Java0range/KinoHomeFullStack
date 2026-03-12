@@ -1,16 +1,11 @@
 import React from 'react';
+import {IMovie} from "@/models/MoviesModels";
+import Image from "next/image";
 
-interface Movie {
-    id: number;
-    title: string;
-    type: 'movie' | 'series';
-    year: number;
-    rating: number;
-}
 
 interface MoviesTableProps {
-    movies: Movie[];
-    onDelete: (movieId: number) => void;
+    movies: IMovie[];
+    onDelete: (movieId: string) => void;
 }
 
 export const MoviesTable: React.FC<MoviesTableProps> = ({
@@ -32,6 +27,9 @@ export const MoviesTable: React.FC<MoviesTableProps> = ({
                         Тип
                     </th>
                     <th className="text-left px-6 py-4 text-sm font-semibold text-zinc-400">
+                        Состояние
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-semibold text-zinc-400">
                         Год
                     </th>
                     <th className="text-left px-6 py-4 text-sm font-semibold text-zinc-400">
@@ -45,36 +43,39 @@ export const MoviesTable: React.FC<MoviesTableProps> = ({
                 <tbody>
                 {movies.map((movie) => (
                     <tr
-                        key={movie.id}
+                        key={movies.indexOf(movie) + 1}
                         className="border-b border-zinc-800 last:border-0 hover:bg-zinc-800/50 transition-colors"
                     >
-                        <td className="px-6 py-4 text-sm text-zinc-500">#{movie.id}</td>
+                        <td className="px-6 py-4 text-sm text-zinc-500">#{movies.indexOf(movie) + 1}</td>
                         <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-14 bg-zinc-800 rounded flex items-center justify-center">
-                                    <svg
-                                        className="w-5 h-5 text-zinc-600"
-                                        fill="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z" />
-                                    </svg>
+                                    <Image
+                                        className="inline-flex h-15 w-15 items-center justify-center rounded bg-red-600 shadow-[0_0_24px_-6px_rgba(220,38,38,.8)]"
+                                        src={movie.poster}
+                                        alt="Poster"
+                                        width={150}
+                                        height={225}
+                                    />
                                 </div>
                                 <span className="text-sm font-medium text-white">
-                    {movie.title}
+                    {movie.name}
                   </span>
                             </div>
                         </td>
                         <td className="px-6 py-4">
                 <span
                     className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${
-                        movie.type === 'movie'
+                        movie.movie_type === 'Film'
                             ? 'bg-blue-600/20 text-blue-400'
                             : 'bg-purple-600/20 text-purple-400'
                     }`}
                 >
-                  {movie.type === 'movie' ? 'Фильм' : 'Сериал'}
+                  {movie.movie_type === 'Film' ? 'Фильм' : 'Сериал'}
                 </span>
+                        </td>
+                        <td className="px-10 py-4 text-sm text-zinc-400">
+                            {movie.state === "Converting" ? "Конвертируется" : "Готов"}
                         </td>
                         <td className="px-6 py-4 text-sm text-zinc-400">{movie.year}</td>
                         <td className="px-6 py-4">
@@ -87,7 +88,7 @@ export const MoviesTable: React.FC<MoviesTableProps> = ({
                                     <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
                                 </svg>
                                 <span className="text-sm font-medium text-white">
-                    {movie.rating}
+                    {movie.rating?.kp ? movie.rating.kp : movie.rating?.imdb ? movie.rating.imdb : 'N/A'}
                   </span>
                             </div>
                         </td>
@@ -95,7 +96,7 @@ export const MoviesTable: React.FC<MoviesTableProps> = ({
                             <div className="flex items-center justify-end gap-2">
                                 {/* Delete Button */}
                                 <button
-                                    onClick={() => onDelete(movie.id)}
+                                    onClick={() => onDelete(movie._id)}
                                     className="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-600/10 rounded-lg transition-colors"
                                 >
                                     <svg
