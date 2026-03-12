@@ -19,7 +19,7 @@ async def login_user(json: LoginUserSchema, response: Response):
         key="access_token",
         value=security.create_access_token(user_id=str(user_id)),
         httponly=True,
-        max_age=10
+        max_age=1800
     )
     response.set_cookie(
         key="refresh_token",

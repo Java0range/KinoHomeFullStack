@@ -82,7 +82,8 @@ class AsyncUsersODM:
         user = await UsersDocument.find_one(UsersDocument.id == user_id)
         if user:
             await user.delete()
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Пользователь не найден")
+        else:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Пользователь не найден")
 
     @staticmethod
     async def update_user(
@@ -103,7 +104,7 @@ class AsyncUsersODM:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Пользователь не найден")
         if username != user.username:
             user.username = username
-        if password != user.password:
+        if password:
             user.password = await get_password_hash(password)
         if permissions != user.permissions:
             user.permissions = permissions

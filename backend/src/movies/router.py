@@ -35,9 +35,14 @@ async def create_movie(request: Request, json: CreateMovieSchema):
 
 
 @router.delete("/{movie_id}")
-@permission_required("ADMIN")
+@permission_required("MODERATOR")
 async def delete_movie(request: Request, movie_id: str):
+    await broker.connect()
     await AsyncMoviesODM.delete_movie(movie_id=movie_id)
+    await broker.publish(dict(
+        id=str(movie_id),
+        path="delete",
+    ), queue="hls_convertor")
 
 
 @router.get("/genres/{movie_type}")

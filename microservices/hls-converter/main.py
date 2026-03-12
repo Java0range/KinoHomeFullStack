@@ -163,17 +163,19 @@ async def handle_conversion(msg: dict, logger: Logger):
                 results = await gather(*tasks)
 
                 # Удаляем только успешно обработанные файлы
-                for i, entry in enumerate(input_path.iterdir()):
-                    if entry.is_file() and results[i] is True:
-                        entry.unlink()
-                        logger.info(f"Deleted processed file: {entry}")
+                # for i, entry in enumerate(input_path.iterdir()):
+                #     if entry.is_file() and results[i] is True:
+                #         entry.unlink()
+                #         logger.info(f"Deleted processed file: {entry}")
 
                 # Удаляем пустую директорию
-                if not any(input_path.iterdir()):
-                    shutil.rmtree(input_path)
-                    logger.info(f"Cleaned empty series directory: {input_path}")
+                # if not any(input_path.iterdir()):
+                #     shutil.rmtree(input_path)
+                #     logger.info(f"Cleaned empty series directory: {input_path}")
 
-                await AsyncMovieODM.change_movie_state(movie_id=media_id, series_count=len(results))
+                await AsyncMovieODM.change_movie_state(movie_id=media_id,
+                                                       series_count=len(results) if len(results) > 1 else 0
+                                                       )
 
         except Exception as e:
             logger.error(f"Processing error: {str(e)}")

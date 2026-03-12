@@ -110,6 +110,14 @@ class AsyncRecommendationsODM:
         elif len(recommendations) > 1:
             await RecommendationsDocument.delete_all()
             await RecommendationsDocument(main_slider=None).insert()
+            movies = await AsyncMoviesODM.get_random_movies_for_slider()
+            print([i.name for i in movies])
+            await AsyncRecommendationsODM.insert_main_slider_for_movies(
+                movies
+            )
+        else:
+            await RecommendationsDocument.delete_all()
+            await RecommendationsDocument(main_slider=None).insert()
             await AsyncRecommendationsODM.insert_main_slider_for_movies(
                 await AsyncMoviesODM.get_random_movies_for_slider()
             )
