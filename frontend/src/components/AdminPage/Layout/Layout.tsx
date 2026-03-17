@@ -13,7 +13,7 @@ import {UserPermission} from "@/models/UserModels";
 export const Layout: React.FC = () => {
     const { data: userData, isLoading } = useGetUserInfo();
 
-    const [activeSection, setActiveSection] = useState('users');
+    const [activeSection, setActiveSection] = useState('movies');
 
     const renderSection = () => {
         switch (activeSection) {
