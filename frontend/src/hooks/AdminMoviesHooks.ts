@@ -13,7 +13,7 @@ export const useGetSearchMovies = (query: string) => {
 
 export const useModeratorMovies = () => {
     return useQuery({
-        queryKey: ["AdminAllMovies"],
+        queryKey: ["moderatorAllMovies"],
         queryFn: () => MoviesService.getModeratorMovies(),
         select: (({data}) => data)
     });

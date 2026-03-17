@@ -19,6 +19,6 @@ export default class MoviesService {
         return $api.get<IMovie[]>("/movies/moderator");
     };
     static async getMovieById(movie_id: string) {
-        return $api.get<IMovie>(`/movies/${movie_id}`)
+        return $api.get<IMovie>(`/movies/by_id/${movie_id}`)
     }
 };

@@ -60,12 +60,6 @@ async def get_main_slider(request: Request):
     return await AsyncRecommendationsODM.get_main_slider()
 
 
-@router.get("/{movie_id}")
-@permission_required("USER")
-async def get_movie_by_id(request: Request, movie_id: str):
-    return await AsyncMoviesODM.get_movie_by_id(movie_id=movie_id)
-
-
 @router.get("")
 @permission_required("USER")
 async def get_movies(
@@ -85,7 +79,7 @@ async def get_movies(
 
 @router.get("/moderator")
 @permission_required("MODERATOR")
-async def get_admin_movies(
+async def get_moderator_movies(
     request: Request,
     countries: list[str] = Query(None),
     genres: list[str] = Query(None),
@@ -101,7 +95,7 @@ async def get_admin_movies(
     )
 
 
-@router.get("/{movie_id}")
+@router.get("/by_id/{movie_id}")
 @permission_required("USER")
 async def get_movie_by_id(request: Request, movie_id: str):
     return await AsyncMoviesODM.get_movie_by_id(movie_id=movie_id)
