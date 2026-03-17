@@ -15,8 +15,8 @@ export default class MoviesService {
     static async getAllMovies(): Promise<AxiosResponse<IMovie[]>> {
         return $api.get<IMovie[]>("/movies");
     };
-    static async getAdminMovies(): Promise<AxiosResponse<IMovie[]>> {
-        return $api.get<IMovie[]>("/movies/admin");
+    static async getModeratorMovies(): Promise<AxiosResponse<IMovie[]>> {
+        return $api.get<IMovie[]>("/movies/moderator");
     };
     static async getMovieById(movie_id: string) {
         return $api.get<IMovie>(`/movies/${movie_id}`)

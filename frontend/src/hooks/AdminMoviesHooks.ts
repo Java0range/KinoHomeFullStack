@@ -11,10 +11,10 @@ export const useGetSearchMovies = (query: string) => {
     });
 };
 
-export const useAdminMovies = () => {
+export const useModeratorMovies = () => {
     return useQuery({
         queryKey: ["AdminAllMovies"],
-        queryFn: () => MoviesService.getAdminMovies(),
+        queryFn: () => MoviesService.getModeratorMovies(),
         select: (({data}) => data)
     });
 };

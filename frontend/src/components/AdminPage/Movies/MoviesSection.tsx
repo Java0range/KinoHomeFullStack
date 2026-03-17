@@ -1,7 +1,7 @@
 import React, {useMemo, useState} from 'react';
 import { MoviesTable } from './MoviesTable';
 import {useDebounce} from "@/hooks/useDebounce";
-import {useAdminMovies} from "@/hooks/AdminMoviesHooks";
+import {useModeratorMovies} from "@/hooks/AdminMoviesHooks";
 
 
 
@@ -10,7 +10,7 @@ export const MoviesSection: React.FC = () => {
         console.log('Delete movie:', movieId);
     };
 
-    const { data: movies = [], isLoading: isMoviesLoading, refetch: refetchMovies } = useAdminMovies();
+    const { data: movies = [], isLoading: isMoviesLoading, refetch: refetchMovies } = useModeratorMovies();
 
     const [searchQuery, setSearchQuery] = useState('');
     const debouncedSearch = useDebounce(searchQuery, 300);
