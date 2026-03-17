@@ -83,6 +83,24 @@ async def get_movies(
     )
 
 
+@router.get("/admin")
+@permission_required("ADMIN")
+async def get_admin_movies(
+    request: Request,
+    countries: list[str] = Query(None),
+    genres: list[str] = Query(None),
+    movie_type: str = Query(None),
+    count_type: str = Query(None)
+):
+    return await AsyncMoviesODM.get_movies_for_filter(
+        countries=countries,
+        genres=genres,
+        movie_type=movie_type,
+        count_type=count_type,
+        is_admin=True
+    )
+
+
 @router.get("/{movie_id}")
 @permission_required("USER")
 async def get_movie_by_id(request: Request, movie_id: str):

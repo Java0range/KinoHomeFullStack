@@ -30,17 +30,23 @@ class AsyncMoviesODM:
         return movie.id
 
     @staticmethod
-    async def get_movies_for_filter(genres: list[str] | None, countries: list[str] | None, movie_type: str | None, count_type: str = "all"):
+    async def get_movies_for_filter(genres: list[str] | None, countries: list[str] | None, movie_type: str | None,
+                                    count_type: str = "all", is_admin: bool = False
+                                    ):
         def genre_filter(movie):
             return len(set(movie.genres) & set(genres)) > 0
         def country_filter(movie):
             return len(set(movie.countries) & set(countries)) > 0
         if movie_type == "film":
-            movies = await MovieDocument.find(MovieDocument.movie_type == "Film").to_list()
+            movies = await MovieDocument.find(MovieDocument.movie_type == "Film",
+                                              MovieDocument.state == "Ready").to_list()
         elif movie_type == "serial":
-            movies = await MovieDocument.find(MovieDocument.movie_type == "Serial").to_list()
-        else:
+            movies = await MovieDocument.find(MovieDocument.movie_type == "Serial",
+                                              MovieDocument.state == "Ready").to_list()
+        elif is_admin:
             movies = await MovieDocument.find_all().to_list()
+        else:
+            movies = await MovieDocument.find(MovieDocument.state == "Ready").to_list()
         if genres:
             movies = list(filter(genre_filter, movies))
         if countries:
