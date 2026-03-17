@@ -29,7 +29,7 @@ export const useMovies = (type: string, genres: string[] | [], count_type: strin
 
 export const useAllMovies = () => {
     return useQuery({
-        queryKey: ["AdminAllMovies"],
+        queryKey: ["allMovies"],
         queryFn: () => MoviesService.getAllMovies(),
         select: (({data}) => data)
     });
