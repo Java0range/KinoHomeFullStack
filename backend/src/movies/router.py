@@ -83,8 +83,8 @@ async def get_movies(
     )
 
 
-@router.get("/admin")
-@permission_required("ADMIN")
+@router.get("/moderator")
+@permission_required("MODERATOR")
 async def get_admin_movies(
     request: Request,
     countries: list[str] = Query(None),
